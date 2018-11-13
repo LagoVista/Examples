@@ -23,3 +23,5 @@ to
 ```
 faas-cli deploy -f pem-handler.yml
 ```
+
+Note also if you have secured your OpenFAAS site, please use the following reference to update your powershell script.[https://docs.openfaas.com/deployment/](https://docs.openfaas.com/deployment/).
