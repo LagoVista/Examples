@@ -20,8 +20,12 @@ app.set('port', port);
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
+var turnbineIndex = 100;
+var mqttConnected = false;
 
+var server = http.createServer(app);
+var mqtt = require('mqtt')
+var client  = mqtt.connect('mqtt://cyclone-mqtt.iothost.net',{'username':'cyclone','password':'XXXXX!'})
 
 var io = require('socket.io').listen(server);
 
@@ -31,22 +35,23 @@ io.on('connection',function(socket){
       console.log('user disconnected');
     });
 
-    socket.on('chatmessage', function(msg){
-      io.emit('chatmessage', msg);
+    socket.on('statuschange', function(msg){
+      console.log('message >>>')
+      console.log(msg);
+      console.log('<<< message')
+
+      if(client){
+        client.publish(msg,JSON.stringify({}))
+      }
     });
 });
 
-var turnbineIndex = 100;
-var mqttConnected = false;
-var mqtt = require('mqtt')
-var client  = mqtt.connect('mqtt://mqttdev.nuviot.com',{'username':'kevinw','password':'XXX'})
  
 client.on('connect', function () {
   console.log("Connected to mqtt");
   mqttConnected = true;
   client.subscribe('#', function (err) {
     if (!err) {
-      client.publish('presence', 'Hello mqtt')
     }
   })
 })
@@ -58,7 +63,7 @@ client.on('error', function (err) {
  
 client.on('message', function (topic, message) {
   // message is Buffer
-  console.log(message.toString())
+  //console.log(message.toString())
 })
 
 setInterval(() => {
@@ -67,10 +72,10 @@ setInterval(() => {
   var rpm = (Math.random() * 10) + 40
 
   var deviceId = `generator${turnbineIndex}`;
-  var msg = {'turnbiteId':deviceId, 'power':power, 'prm':rpm, 'timeStamp': new Date().toJSON()};
+  var msg = {'turbineId':deviceId, 'power':power, 'rpm':rpm, 'timeStamp': new Date().toJSON()};
 
   if(mqttConnected){
-    client.publish(`turbinestatus/current/${deviceId}`, JSON.stringify(msg));
+    client.publish(`turbine/status/${deviceId}`, JSON.stringify(msg));
   //  console.log(msg);
   }
   io.emit('turnbineUpdated', msg);

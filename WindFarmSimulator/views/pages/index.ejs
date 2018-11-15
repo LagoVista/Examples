@@ -2,40 +2,89 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <% include ../partials/head %>
 </head>
+
 <body class="container">
 
-<header>
-    <% include ../partials/header %>
-</header>
+    <header>
+        <% include ../partials/header %>
+    </header>
 
-<main>
-<div class="row">
-    <div class="col-sm-8">    
+    <main>
         <div class="jumbotron">
-            <h1>This is the home page</h1>
-            <p>Welcome to templating using EJS</p>
+            <h1 class="display-4">Cyclone Power</h1>
+            <p class="lead">Cyclone Power is a Wind Farm Simulator that is a joint effort between <a href="https://eolianvr.com/">EOLIAN</a>
+                and <a href="https://www.Software-Logistics.com">
+                    Software Logistics
+                </a>.</p>
+            <hr class="my-4">
         </div>
-    </div>
 
-<p>
-    Starts up the machine at wind speeds of about 8 to 16 miles per hour (mph) and shuts off the machine at about 55 mph. Turbines do not operate at wind speeds above about 55 mph because they may be damaged by the high winds.
-</p>
+        <div class="container" id="turbines">
 
-    <div class="col-sm-4">        
-        <div class="well">
-            <h3>Look I'm A Sidebar!</h3>
         </div>
-    </div>
+    </main>
 
-</div>
-</main>
-
-<footer>
-    <% include ../partials/footer %>
-</footer>
+    <footer>
+        <% include ../partials/footer %>
+    </footer>
 
 </body>
+<script>
+    var socket = io();
+
+    $(function () {
+        $('form').submit(function () {
+            $('#m').val('');
+            return false;
+        });
+
+        socket.on('turnbineUpdated', function (msg) {
+            /*var msg = JSON.parse(json);*/
+            const turbineId = msg.turbineId;
+            var parent = $(`#${turbineId}`)
+            $(parent).find('#power').text(msg.power.toFixed(2));
+            $(parent).find('#rpm').text(msg.rpm.toFixed(2));
+        });
+    });
+
+    function turnOn(id) {
+        var topic = `turbine/power/${id}/on`;
+        console.log(topic);
+        socket.emit('statuschange', topic);
+    }
+
+    function turnOff(id){
+        var topic = `turbine/power/${id}/off`;
+        console.log(topic);
+        socket.emit('statuschange', topic);
+    }
+
+    var turnbines = new Array();
+    for (var idx = 0; idx < 10; ++idx) {
+        turnbines[idx] = `generator${idx + 101}`;
+    }
+
+    $(document).ready(function () {
+        var list = "";
+        for (i = 0; i < turnbines.length; i++) {
+            var ele = "<div style='margin-bottom:5px' class=\"row\" id=" + turnbines[i] + " >";
+            ele += "<div class=\"col-sm\">" + turnbines[i] + "</div>"
+            ele += "<div class=\"col-sm\">Power: <span id='power'>-</span></div>"
+            ele += "<div class=\"col-sm\">RPM: <span id='rpm'>-</span></div>"
+            ele += "<div class=\"col-sm\"><button onclick=\"turnOn('" + turnbines[i] + "')\" class=\"btn btn-success\">ON</div>"
+            ele += "<div class=\"col-sm\"><button onclick=\"turnOff('" + turnbines[i] + "')\" class=\"btn btn-danger\">OFF</div>"
+
+            ele += "</div>"
+            list += ele;
+        }
+
+        $("#turbines").append(list);
+
+    });
+</script>
+
 </html>
