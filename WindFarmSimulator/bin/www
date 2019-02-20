@@ -20,6 +20,8 @@ app.set('port', port);
  * Create HTTP server.
  */
 
+var revolutions = 100;
+
 var turnbineIndex = 100;
 var mqttConnected = false;
 
@@ -67,12 +69,16 @@ client.on('message', function (topic, message) {
 })
 
 setInterval(() => {
-  var power = (Math.random() * 250) + 750
+  var power = Number(((Math.random() * 250) + 3000).toFixed(2));
   
-  var rpm = (Math.random() * 10) + 40
+  var rpm = Number(((Math.random() * 10) + 40).toFixed(2));
+
+  var temperature = Number(((Math.random() * 10) + 40).toFixed(2));
+
+  revolutions += 13;
 
   var deviceId = `generator${turnbineIndex}`;
-  var msg = {'turbineId':deviceId, 'power':power, 'rpm':rpm, 'timeStamp': new Date().toJSON()};
+  var msg = {'turbineId':deviceId, 'power':power, 'status':1, 'temperature': temperature, 'rpm':rpm, 'revolutions': revolutions, 'pitch':40};
 
   if(mqttConnected){
     client.publish(`turbine/status/${deviceId}`, JSON.stringify(msg));
@@ -84,7 +90,7 @@ setInterval(() => {
   {
     turnbineIndex = 100;
   }
-},100);
+},1000);
 
 /**
  * Listen on provided port, on all network interfaces.
