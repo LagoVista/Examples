@@ -58,15 +58,31 @@ namespace SBListener
 
             var _client = new QueueClient(bldr, ReceiveMode.PeekLock, RetryPolicy.Default);
 
-            _client.RegisterMessageHandler(async (msg, token) =>
+            _client.RegisterMessageHandler( (msg, token) =>
             {
                 var message = System.Text.UTF8Encoding.UTF8.GetString(msg.Body);
+                Console.WriteLine("Message Received:");
+                Console.ForegroundColor = ConsoleColor.DarkGreen;
+                Console.WriteLine("-------------------------------------------------------------------");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.WriteLine($"To:\t{msg.To}");
+                Console.WriteLine($"Label:\t{msg.Label}");
+                Console.WriteLine($"MsgId:\t{msg.MessageId}");
                 Console.WriteLine(message);
+                Console.ForegroundColor = ConsoleColor.DarkGreen;
+                Console.WriteLine("-------------------------------------------------------------------");
+                Console.WriteLine();
+                Console.ResetColor();
+
+                return Task.FromResult(default(object));
             },
             (ex) =>
             {
                 return Task.FromResult(default(object));
             });
+
+            Console.WriteLine($"Listing for messages on {accountId}/{queueName}");
+            Console.WriteLine("-----------------------------------------------------------------------");
 
             Console.ReadKey();
         }
